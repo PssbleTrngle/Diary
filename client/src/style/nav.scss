@@ -1,0 +1,16 @@
+nav {
+  grid-area: nav;
+
+  ul {
+    list-style-type: none;
+
+    li {
+      padding: 10px;
+
+      &.active,
+      &:hover {
+        color: $primary;
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+html {
+    overflow: hidden;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    transition: background 0.1s linear, opacity 0.1s linear, filter 0.1s linear;
+}
+
+.dark {
+
+    @import "./dark.scss";
+    @import "./general.scss";
+}
+
+.light {
+
+    @import "./light.scss";
+    @import "./general.scss";
+}
+
+.red {
+
+    @import "./red.scss";
+    @import "./general.scss";
+
+}
