@@ -1,0 +1,40 @@
+.settings {
+    display: grid;
+    align-items: center;
+    min-height: 50vh;
+
+    & > div {
+
+        padding: 20px;
+        border: 2px solid $gray;
+        border-radius: 15px;
+
+        ul.buttons {
+            display: grid;
+            gap: 15px;
+            grid-auto-flow: column;
+            grid-auto-columns: 1fr;
+        }
+
+        h3 {
+            text-transform: capitalize;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        &#services {
+            ul {
+                list-style: none;
+
+                li {
+                    @include lighten();
+                    cursor: pointer;
+                    border-radius: 20px;
+                    padding: 10px;
+                    margin: 10px 0;
+                }
+            }
+        }
+
+    }
+}

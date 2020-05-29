@@ -1,0 +1,67 @@
+#timeline {
+    
+    grid-template: "timeline";
+
+    .timeline {
+        width: 100vw;
+    }
+
+}
+
+.timeline {
+    $distance: 20px;
+    padding: $distance;
+    overflow-y: scroll;
+    overflow-x: hidden;
+
+    max-height: calc(100% - #{$distance * 2});
+    min-width: 600px;
+
+    grid-area: timeline;
+
+    .entry {
+        position: relative;
+        margin: 0 auto;
+
+        &:not(:last-child) {
+            margin-bottom: $distance;
+        }
+
+        display: grid;
+        grid-template:
+            "date"
+            "title"
+            "text";
+
+        row-gap: 10px;
+
+        h1 {
+            grid-area: title;
+        }
+
+        p {
+            grid-area: text;
+        }
+        
+        .timestamp {
+            color: $light-gray;
+            justify-self: center;
+            grid-area: date;
+        }
+
+        .service {
+            justify-self: right;
+            grid-area: service;
+            font-size: 1.2rem;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        width: 600px;
+
+        background-color: $gray;
+        padding: 30px;
+        border-radius: 15px;
+    }
+}

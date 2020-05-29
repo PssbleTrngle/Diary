@@ -9,15 +9,11 @@ module.exports = {
    database: process.env.DB_STORAGE ?? process.env.DB_NAME,
    synchronize: true,
    logging: process.env.DB_LOGGING === 'true',
-   entities: [
-      'src/models/**/*.ts'
-   ],
-   migrations: [
-      'src/migration/**/*.ts'
-   ],
-   subscribers: [
-      'src/subscriber/**/*.ts'
-   ],
+   entities: ['src/models/**/*.ts'],
+   migrations: ['src/migration/**/*.ts'],
+   subscribers: ['src/subscriber/**/*.ts'],
+   seeds: ['src/seeds/**/*.ts'],
+   factories: ['src/factories/**/*.ts'],
    cli: {
       entitiesDir: 'src/models',
       migrationsDir: 'src/migration',

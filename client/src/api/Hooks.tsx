@@ -80,7 +80,7 @@ export function useApiBunch<R>(endpoints: string[]) {
 export function useApiList<M extends IModel>(endpoint: string, params?: ParsedUrlQueryInput) {
     const [models, loading, message] = useApi<IList<M>>(endpoint, params);
 
-    const sorted = useMemo(() => (models?.objects ?? [])
+    const sorted = useMemo(() => (models ?? [])
         .sort((a, b) => a.id - b.id), [models]);
 
     return [sorted, loading, message] as [M[] | undefined, boolean, string | undefined];
@@ -99,8 +99,8 @@ export function useLoadingList<M extends IModel>(endpoint: string, params: Parse
     const [result, loading, error] = useApiList<M>(endpoint, p);
 
     if (loading) return <Loading />
-    if (!result) return <span className='empty-info'>{error || 'Not found'}</span>
-    return r ? r(result) : null;
+    if (error) return <span className='empty-info'>{error || 'Not found'}</span>
+    return (r && result) ? r(result) : null;
 }
 
 /**

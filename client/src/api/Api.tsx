@@ -1,5 +1,5 @@
 import querystring, { ParsedUrlQueryInput } from 'querystring';
-import format from 'dateformat';
+import { API_URL } from '../config';
 
 /**
  * Replaced once we know the format the data will be sent by the server
@@ -18,16 +18,26 @@ class Api {
 
     private observers: Set<IObserver<any>> = new Set();
 
+    private apiURL(endpoint: string) {
+        if (endpoint.startsWith(API_URL)) return endpoint;
+        return `${API_URL}/${endpoint}`
+    }
+
     private authorization() {
         const saved = localStorage.getItem('apikey');
-        if(!saved) throw new Error('Not logged in');
-        return saved;
+        if (!saved) throw new Error('Not logged in');
+        return `Apikey ${saved}`;
     }
 
     async isLoggedIn() {
         try {
             this.authorization();
-            return true;
+            return this.fetch('user')
+                .then(() => true)
+                .catch(() => {
+                    localStorage.removeItem('apikey');
+                    return false;
+                });
         } catch {
             return false;
         }
@@ -87,7 +97,9 @@ class Api {
         const body = new FormData()
         body.append(key, file)
 
-        return await fetch(endpoint, {
+        const url = this.apiURL(endpoint);
+
+        return await fetch(url, {
             method: method.toUpperCase(),
             headers: {
                 'Accept': 'application/json',
@@ -100,7 +112,9 @@ class Api {
 
     private async method<O>(method: Method, endpoint: string, args?: any, update = true) {
 
-        const response = await fetch(endpoint, {
+        const url = this.apiURL(endpoint);
+
+        const response = await fetch(url, {
             method: method.toUpperCase(),
             headers: {
                 'Accept': 'application/json',
@@ -115,7 +129,7 @@ class Api {
         if (response.status === 200)
             return response.json() as Promise<Response<O>>;
         else
-            throw new Error('Not logged in');
+            throw new Error(await response.text() ?? 'Internal server error');
 
     }
 
@@ -132,35 +146,39 @@ class Api {
     }
 
     async logout() {
+        API.delete('apikey');
+        localStorage.removeItem('apikey');
         window.location.reload();
     }
 
     /**
      * Retrieves a new api key from the api and saves it
-     * @param base64 The encoded username and password
+     * @param username The username
+     * @param password The password
      */
     async login(username: string, password: string) {
         const { platform, vendor } = navigator;
 
-        const base64 = new Buffer(`${username}: ${password}`).toString('base64');
-        const date = format(new Date());
+        const base64 = new Buffer(`${username}:${password}`).toString('base64');
 
-        const response = await fetch('apikey', {
+        const url = this.apiURL('apikey');
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'Authorization': `Basic ${base64}`,
             },
-            body: JSON.stringify({ purpose: `${vendor} ${platform}, ${date}` }),
+            body: JSON.stringify({ purpose: `${vendor} ${platform}` }),
         });
 
         this.update();
 
-        if (response.status !== 201) throw new Error('Invalid credentials');
+        if (response.status !== 201) throw new Error(await response.text());
 
-        const { data } = await response.json()
-        localStorage.setItem('apikey', data);
+        const { key } = await response.json()
+        localStorage.setItem('apikey', key);
 
         window.location.reload();
 

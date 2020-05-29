@@ -5,24 +5,20 @@ html {
 * {
     margin: 0;
     padding: 0;
-    transition: background 0.1s linear, opacity 0.1s linear, filter 0.1s linear;
+    transition: background 0.1s linear, opacity 0.1s linear, filter 0.1s linear, transform 0.15s ease-out;
 }
 
 .dark {
-
-    @import "./dark.scss";
+    @import "./themes/dark.scss";
     @import "./general.scss";
 }
 
 .light {
-
-    @import "./light.scss";
+    @import "./themes/light.scss";
     @import "./general.scss";
 }
 
 .red {
-
-    @import "./red.scss";
+    @import "./themes/red.scss";
     @import "./general.scss";
-
 }

@@ -1,13 +1,18 @@
 import classes from 'classnames';
 import React, { MemoExoticComponent, ReactNode, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Redirect, Route, Switch, useLocation } from 'react-router-dom';
-import Api from '../api/Api';
-import { Loading } from '../api/Hooks';
-import '../style/app.scss';
-import Dialog, { Provider as DialogProvider } from './Dialog';
-import { useSettings, Provider as SettingsProvider } from './Settings';
-import Cell from './Cell';
-import Login from './Login';
+import Api from './api/Api';
+import { Loading } from './api/Hooks';
+import './style/app.scss';
+import Dialog, { Provider as DialogProvider } from './components/Dialog';
+import Settings, { useSettingsProvider, Provider as SettingsProvider } from './components/Settings';
+import Cell from './components/Cell';
+import Login from './pages/Login';
+import UserPanel from './pages/UserPanel';
+import Apikeys from './pages/Apikeys';
+import Timeline from './components/Timeline';
+import Entries from './pages/Entries';
+import { settings } from 'cluster';
 
 const SinglePage = ({ children }: { children: ReactNode }) => {
 	return <section className='single'>{children}</section>;
@@ -29,10 +34,14 @@ const App = () => {
 
 	const dialog = useState<JSX.Element | null>(null);
 
-	const [settings, setSettings] = useSettings();
-	const { theme } = settings;
+	const [settings, setSettings] = useSettingsProvider();
+	const { theme } = settings.client;
 
 	const pages: IPage[] = [
+		{ path: '/user', component: UserPanel },
+		{ path: '/timeline', component: Entries },
+		{ path: '/settings', component: Settings },
+		{ path: '/settings/logins', component: Apikeys },
 	];
 
 	return (
@@ -55,7 +64,7 @@ const App = () => {
 									)}
 
 									<Route exact path='/'>
-										<Redirect to='/playlists' />
+										<Redirect to='/timeline' />
 									</Route>
 
 									<Route path='/logout'>

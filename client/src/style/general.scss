@@ -7,6 +7,16 @@ a {
     }
 }
 
+h1,
+h2,
+h3,
+h4,
+h5 {
+    &:first-child {
+        margin-top: 15px;
+    }
+}
+
 @mixin grid-borders() {
     & > * {
         box-shadow: 0 0 0 $border-width / 2 $border-color;
@@ -23,37 +33,17 @@ a {
     transform: translate(-50%, -50%);
 }
 
-@mixin model-view {
-    display: grid;
-    grid-template:
-        "list active"
-        / 1fr 4fr;
-
-    & > .list {
-        height: calc(100vh - #{$player-height});
-
-        button {
-            height: 40px;
-            width: 40px;
-            margin: 10px 50%;
-            transform: translateX(-50%);
-        }
-
-        ul {
-            height: calc(100% - 60px);
-        }
-
-        min-width: 200px;
-        border-right: $border-width solid $border-color;
+@mixin hover($by: 0.05) {
+    &:hover {
+        transform: translateY(-$by * 100%)
     }
+}
 
-    .active {
-        padding-top: 10px;
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+@mixin lighten($by: 0.5) {
+    @include hover();
+    filter: brightness(1);
+    &:hover {
+        filter: brightness(1 + $by);
     }
 }
 
@@ -92,29 +82,12 @@ a {
 }
 
 .container {
-    grid-template:
-        "nav player" $player-height
-        "nav page" 240px - $player-height
-        "playlists page"
-        "cover page" #{$sidebar-width}
-        / #{$sidebar-width} 1fr;
+    display: grid;
+    justify-content: center;
+}
 
-    .playlists {
-        overflow: hidden;
-        height: 100%;
-    }
-
-    & > .cover {
-        height: $sidebar-width;
-        align-self: end;
-    }
-
-    .page {
-        height: calc(100vh - #{$player-height});
-        display: grid;
-    }
-
-    @include grid-borders();
+.page {
+    height: 100vh;
 }
 
 img {
@@ -149,6 +122,10 @@ span + svg {
     margin-left: 10px;
 }
 
+svg + span {
+    margin-left: 10px;
+}
+
 @keyframes load {
     from {
         padding: 10px;
@@ -174,40 +151,12 @@ span + svg {
     margin: auto;
 }
 
-/*
-.loading {
-    position: relative;
-    height: 100%;
-    width: 100%;
-    display: none;
-
-    &::after {
-        content: "";
-
-        transform: translate(-50%, -50%);
-
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        background-color: $text;
-        border-radius: 100%;
-        animation: load 0.5s ease-out infinite alternate;
-    }
-}
-*/
-
 @import "./forms.scss";
 @import "./nav.scss";
-@import "./player.scss";
-@import "./artists.scss";
-@import "./albums.scss";
-@import "./playlists.scss";
-@import "./seeder.scss";
-@import "./songlist.scss";
 @import "./dialog.scss";
 @import "./messages.scss";
 @import "./list.scss";
 @import "./img.scss";
 @import "./login.scss";
-@import "./editor.scss";
-@import "./upload.scss";
+@import "./timeline.scss";
+@import "./settings.scss";

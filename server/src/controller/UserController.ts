@@ -1,24 +1,9 @@
-import {getRepository} from "typeorm";
-import {NextFunction, Request, Response} from "express";
-import User from "../models/User";
+import { AuthRequest } from "..";
 
-export class UserController {
+export default class UserController {
 
-    async all() {
-        return User.find();
+    async get(req: AuthRequest) {
+        return req.user;
     }
-
-    async one(request: Request) {
-        return User.findOne(request.params.id);
-    }
-
-    async save(request: Request) {
-        return User.save(request.body);
-    }
-
-    async remove(request: Request) {
-        const user = await User.findOne(request.params.id);
-        return user?.remove();
-    }
-
+    
 }

@@ -1,22 +1,86 @@
 import { faFire, faMoon, faSun, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
-import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
+import classes from 'classnames';
+import l from 'lodash';
+//@ts-ignore
+import moment from 'moment/min/moment-with-locales';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { Loading, useApiList } from '../api/Hooks';
+import { ILogin, IService } from '../api/Models';
+import { getStyle } from './Service';
+import Cell from './Cell';
+import { SERVER_URL } from '../config';
 
-export interface ISettings {
-    theme: string;
+type DeepPartial<T> = {
+    [P in keyof T]?: T[P] extends Array<infer U> ? Array<DeepPartial<U>> : T[P] extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : DeepPartial<T[P]>;
 }
 
-export const DEFAULT_SETTINGS = { theme: 'dark' }
+export interface IAccountSettings {
 
-const SettingsContext = createContext<[ISettings, Dispatch<SetStateAction<ISettings>>]>(
-    [DEFAULT_SETTINGS, () => { }]
-);
+}
 
-/**
- * einstellbare Settings: Farbethema der Icons
- */
+export interface IClientSettings {
+    theme: string;
+    lang: string;
+}
+
+export interface ISettings {
+    client: IClientSettings;
+    account?: IAccountSettings;
+}
+
+export const DEFAULT_SETTINGS = {
+    theme: 'dark',
+    lang: navigator.language,
+}
+
 const Settings = () => {
-    const [, setSettings] = useContext(SettingsContext);
+
+    const panels = [
+        { title: 'services', component: Services },
+        { title: 'theme', component: Theme },
+    ]
+
+    return <div className='settings'>
+        {panels.map(panel =>
+            <div id={panel.title} key={panel.title}>
+                <h3>{panel.title}</h3>
+                <panel.component />
+            </div>
+        )}
+    </div>
+}
+
+const Services = () => {
+    const [services] = useApiList<IService>('services');
+    const [logins] = useApiList<ILogin>('logins');
+
+    return (
+        <>
+            {services && logins
+                ? <ul>
+                    {services.map(({ id, name }) => {
+                        const login = logins.find(l => l.service.id === id);
+                        const { icon, backgroundColor, text } = getStyle(name);
+
+                        return (
+                            <a href={`${SERVER_URL}/auth/${name.toLowerCase()}`}>
+                                <li style={{ backgroundColor, color: text }} key={id} className={classes({ has: !!login })}>
+                                    <Icon {...{ icon }} />
+                                    <span>{name}</span>
+                                </li>
+                            </a>
+                        )
+                    })}
+                </ul>
+                : <Loading />
+            }
+        </>
+    )
+}
+
+const Theme = () => {
+    const [, setSettings] = useSettings();
 
     const themes: [string, IconDefinition][] = [
         ['dark', faMoon],
@@ -24,33 +88,69 @@ const Settings = () => {
         ['red', faFire],
     ];
 
-    return <div className='settings'>
-
-        <h1>Settings</h1>
-
-        <ul>
+    return (
+        <ul className='buttons'>
             {themes.map(([theme, icon]) =>
-                <button key={theme} className='icon-button' onClick={() => setSettings(s => ({ ...s, theme }))}>
+                <button key={theme} className='icon-button' onClick={() => setSettings({ client: { theme } })}>
                     <Icon {...{ icon }} />
                 </button>
             )}
         </ul>
-    </div>
+    )
 }
+
+const Context = createContext<[ISettings, (changed: DeepPartial<ISettings>) => void]>([
+    { client: DEFAULT_SETTINGS },
+    () => { },
+]);
+
+export const Provider = Context.Provider;
 
 export function useSettings() {
-    const saved = localStorage.getItem('settings')
-    const defaultSettings = saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
-
-    const [settings, setSettings] = useState<ISettings>(defaultSettings)
-
-    useEffect(() => {
-        localStorage.setItem('settings', JSON.stringify(settings));
-    }, [settings])
-
-    return [settings, setSettings] as [ISettings, Dispatch<SetStateAction<ISettings>>];
+    return useContext(Context);
 }
 
-export const Provider = SettingsContext.Provider;
+export function useSettingsProvider() {
+
+    const client: IClientSettings = useMemo(() => {
+        const saved = localStorage.getItem('settings')
+        return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
+    }, []);
+
+    const [settings, set] = useState<ISettings>({ client })
+    const setSettings = (settings: DeepPartial<ISettings>) => {
+        set(s => ({ ...l.merge(s, settings) }))
+    }
+
+    useEffect(() => {
+        localStorage.setItem('settings', JSON.stringify(settings.client));
+    }, [settings.client])
+
+    useEffect(() => {
+        // TODO post to server
+    }, [settings.account])
+
+    return [settings, setSettings] as [ISettings, (s: DeepPartial<ISettings>) => void];
+}
+
+const dateFormats: { [key: string]: string } = {
+    'en-US': 'dddd, MMMM Do YYYY',
+    'de-DE': 'dddd, Do Mo YYYY',
+};
+
+/**
+ * @param timestamp The timestamp to convert
+ * @param threshold The threshold until which '... minutes ago' is shown instead. 0 = never
+ */
+export function useFormat(timestamp: string | number, threshold = 1000 * 60 * 60) {
+    const [{ client }] = useSettings();
+    const { lang } = client;
+
+    const diff = new Date().getTime() - new Date(timestamp).getTime();
+    if (diff < threshold) return 'Ago';
+
+    const mask = dateFormats[lang] ?? dateFormats['en-US'];
+    return moment(timestamp).locale(lang).format(mask);
+}
 
 export default Settings;

@@ -1,23 +1,131 @@
-import {UserController} from "./controller/UserController";
+import ResourceController, { EntityStatic } from './controller/ResourceController';
+import { BaseEntity } from 'typeorm';
+import User from './models/User';
+import Entry from './models/Entry';
+import AuthController from './controller/AuthController';
+import UserController from './controller/UserController';
+import Apikey from './models/Apikey';
+import { Service } from './models/Service';
+import Login from './models/Login';
+import ServiceController from './controller/ServiceController';
+import { Request, Response } from 'express';
 
-export const Routes = [{
-    method: "get",
-    route: "/users",
-    controller: UserController,
-    action: "all"
-}, {
-    method: "get",
-    route: "/users/:id",
-    controller: UserController,
-    action: "one"
-}, {
-    method: "post",
-    route: "/users",
-    controller: UserController,
-    action: "save"
-}, {
-    method: "delete",
-    route: "/users/:id",
-    controller: UserController,
-    action: "remove"
-}];
+interface IRoute {
+    method: string;
+    route: string;
+    controller: any;
+    action: string;
+    auth?: boolean;
+}
+
+const Resources: {
+    url: string;
+    owned: boolean;
+    filter?: Filter;
+}[] = [];
+
+export const Routes: IRoute[] = [
+    ...resource('users', User),
+    ...resource('entries', Entry, true),
+    ...resource('apikeys', Apikey, true),
+    ...resource('logins', Login, true),
+    ...resource('services', Service),
+    {
+        method: 'get',
+        route: '/auth/:id',
+        controller: ServiceController,
+        action: 'authorize',
+        auth: true,
+    },
+    {
+        method: 'post',
+        route: '/api/apikey',
+        controller: AuthController,
+        action: 'login',
+    },
+    {
+        method: 'delete',
+        route: '/api/apikey',
+        controller: AuthController,
+        action: 'logout',
+        auth: true,
+    },
+    {
+        method: 'get',
+        route: '/api/user',
+        controller: UserController,
+        action: 'get',
+        auth: true,
+    },
+    resources(),
+    {
+        method: 'get',
+        route: '*',
+        controller: class {
+            get(_: Request, res: Response) {
+                if (process.env.NODE_ENV === 'development')
+                    res.redirect('https://localhost:3000')
+                else res.send('TODO')
+            }
+        },
+
+    }
+];
+
+interface Filter {
+    all?: boolean;
+    one?: boolean;
+    save?: boolean;
+    remove?: boolean;
+    update?: boolean;
+}
+
+/**
+ * @param url The base API url
+ * @param resource The Entity model
+ * @param owned If the entity model should only be accecible to the associated user
+ */
+function resource<E extends BaseEntity>(url: string, resource: EntityStatic<E>, owned = false, filter?: Filter): IRoute[] {
+    const controller = ResourceController(resource, owned);
+
+    Resources.push({ url, owned, filter })
+    const auth = owned;
+
+    return [{
+        method: 'get',
+        route: `/api/${url}`,
+        controller, auth,
+        action: 'all'
+    }, {
+        method: 'get',
+        route: `/api/${url}/:id`,
+        controller, auth,
+        action: 'one'
+    }, {
+        method: 'post',
+        route: `/api/${url}`,
+        controller, auth,
+        action: 'save'
+    }, {
+        method: 'delete',
+        route: `/api/${url}/:id`,
+        controller, auth,
+        action: 'remove'
+    }, {
+        method: 'post',
+        route: `/api/${url}/:id`,
+        controller, auth,
+        action: 'update'
+    }].filter(({ action }) => !filter || (action in filter && (filter as any)[action]))
+}
+
+function resources(): IRoute {
+    return {
+        method: 'get',
+        route: '/api/endpoints',
+        controller: class {
+            all = () => Resources;
+        },
+        action: 'all'
+    }
+}
