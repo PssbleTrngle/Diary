@@ -2,7 +2,7 @@ FROM node:latest
 
 # Install client dependencies
 COPY ./package.json client/
-RUN cd /client && npm install
+RUN cd /client && npm install --no-audit --no-package-lock
 
 # Build client
 COPY ./src client/src/

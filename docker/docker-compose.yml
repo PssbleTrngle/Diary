@@ -16,8 +16,6 @@ services:
       context: ../server
       dockerfile: ../docker/server.dockerfile
     env_file: "./.env"
-    ports:
-      - 8080:8080
 
   client:
     working_dir: /client
