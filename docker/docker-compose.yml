@@ -5,7 +5,7 @@ volumes:
 
 services:
   server:
-    image: dockergelb/spoton
+    image: dockergelb/diary
     depends_on:
       - client
     working_dir: /server
