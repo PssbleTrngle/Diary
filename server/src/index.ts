@@ -68,7 +68,7 @@ createConnection(config as any).then(async connection => {
                     error('Controller encountered unwanted error:')
                     error(e.message);
 
-                    if(e.isAxiosError && e.response) {
+                    if (e.isAxiosError && e.response) {
                         error(e.response?.data);
                     }
                 }
@@ -89,6 +89,14 @@ createConnection(config as any).then(async connection => {
             debug(`Registered logic for '${service}'`);
 
         });
+
+    app.use(express.static('/client'));
+    app.get('/', (_, res) => {
+        if (process.env.NODE_ENV === 'development')
+            res.redirect('http://localhost:3000')
+        else
+            res.sendFile('/client/index.html')
+    });
 
     // register express routes from defined application routes
     Routes.forEach(({ controller, action, route, method, auth }) => {

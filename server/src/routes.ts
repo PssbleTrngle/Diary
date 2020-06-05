@@ -85,19 +85,7 @@ export const Routes: IRoute[] = [
         action: 'get',
         auth: true,
     },
-    resources(),
-    {
-        method: 'get',
-        route: '/',
-        controller: class {
-            get(_: Request, res: Response) {
-                if (process.env.NODE_ENV === 'development')
-                    res.redirect('http://localhost:3000')
-                else res.send('TODO')
-            }
-        },
-        action: 'get'
-    }
+    resources()
 ];
 
 interface Filter {
