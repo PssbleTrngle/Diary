@@ -1,4 +1,8 @@
 version: "3.6"
+
+volumes:
+  public:
+
 services:
   server:
     image: dockergelb/spoton
@@ -7,7 +11,7 @@ services:
     working_dir: /server
     volumes:
       - ./db:/server/db
-      - ./public:/client
+      - public:/client
     build:
       context: ../server
       dockerfile: ../docker/server.dockerfile
@@ -18,7 +22,7 @@ services:
   client:
     working_dir: /client
     volumes:
-      - ./public:/client/out/
+      - public:/client/out/
     build:
       context: ../client
       dockerfile: ../docker/client.dockerfile
