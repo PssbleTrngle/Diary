@@ -41,6 +41,11 @@ select,
         }
     }
 
+    &.red {
+        color: #FFF;
+        background-color: $red;
+    }
+
     &[type="text"],
     &[type="password"],
     &[type="number"] {

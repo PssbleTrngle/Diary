@@ -1,9 +1,11 @@
-import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import Entry from "./Entry";
 import Login from "./Login";
 
 @Entity()
 export class Service extends BaseEntity {
+
+    static hidden = ['secret'];
 
     @PrimaryGeneratedColumn()
     id!: number;
@@ -11,19 +13,35 @@ export class Service extends BaseEntity {
     @Column({ length: 64, unique: true })
     name!: string;
 
-    @OneToMany(() => Entry, entry => entry.service, { nullable: true })
-    entries!: Entry[];
+    @OneToMany(() => Entry, entry => entry.service)
+    entries!: Promise<Entry[]>;
 
     @OneToMany(() => Login, login => login.service)
-    logins!: Login[];
+    logins!: Promise<Login[]>;
 
     @Column()
     client_id!: string;
 
-    @Column({ select: false })
-    secret!: string;
+    @Column()
+    client_secret!: string;
 
     @Column()
-    url!: string;
+    auth_url!: string;
+
+    @Column()
+    token_url!: string;
+
+    @Column()
+    api_url!: string;
+
+    @Column()
+    token_type!: string;
+
+    @Column({ nullable: true })
+    scope?: string;
+
+    public redirectURL() {
+        return `${process.env.APP_URL}/auth/${this.name.toLowerCase()}`;
+    }
 
 }

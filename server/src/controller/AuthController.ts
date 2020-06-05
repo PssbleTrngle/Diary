@@ -1,11 +1,11 @@
-import { AuthRequest } from "..";
-import User from "../models/User";
-import { HttpError } from './ResourceController'
-import { Request, Response, NextFunction } from "express";
-import Apikey from "../models/Apikey";
 import bcyrpt from 'bcrypt';
+import { NextFunction, Request, Response } from "express";
 import jwt from 'jsonwebtoken';
-import { debug } from '../logging'
+import { AuthRequest } from "..";
+import { debug } from '../logging';
+import Apikey from "../models/Apikey";
+import User from "../models/User";
+import { HttpError } from './ResourceController';
 
 export default class AuthController {
 
@@ -15,13 +15,14 @@ export default class AuthController {
     private static EMAIL_REGEX = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/
 
     async authenticate(req: AuthRequest, _: Response, next: NextFunction) {
+
         const key = (req.headers.authorization ?? '').split(' ')[1] ?? '';
         const apikey = await Apikey.findOne({ where: { key }, relations: ['user'] });
         if (!apikey) throw new HttpError(401, 'Not authenticated');
 
         req.user = apikey.user;
         req.key = apikey;
-        
+
         apikey.timestamps.updated = new Date();
         apikey.save();
     }

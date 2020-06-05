@@ -80,10 +80,14 @@ export function useApiBunch<R>(endpoints: string[]) {
 export function useApiList<M extends IModel>(endpoint: string, params?: ParsedUrlQueryInput) {
     const [models, loading, message] = useApi<IList<M>>(endpoint, params);
 
+    
+    /*
     const sorted = useMemo(() => (models ?? [])
         .sort((a, b) => a.id - b.id), [models]);
+    */
 
-    return [sorted, loading, message] as [M[] | undefined, boolean, string | undefined];
+
+    return [models ?? [], loading, message] as [M[] | undefined, boolean, string | undefined];
 }
 
 

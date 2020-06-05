@@ -1,18 +1,19 @@
+import { faClock, faCog, IconDefinition, faDownload } from '@fortawesome/free-solid-svg-icons';
 import classes from 'classnames';
 import React, { MemoExoticComponent, ReactNode, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import Api from './api/Api';
 import { Loading } from './api/Hooks';
-import './style/app.scss';
-import Dialog, { Provider as DialogProvider } from './components/Dialog';
-import Settings, { useSettingsProvider, Provider as SettingsProvider } from './components/Settings';
 import Cell from './components/Cell';
+import Dialog, { Provider as DialogProvider } from './components/Dialog';
+import Navbar from './components/Navbar';
+import Settings, { Provider as SettingsProvider, useSettingsProvider } from './components/Settings';
+import Apikeys from './pages/Apikeys';
+import Entries from './pages/Entries';
 import Login from './pages/Login';
 import UserPanel from './pages/UserPanel';
-import Apikeys from './pages/Apikeys';
-import Timeline from './components/Timeline';
-import Entries from './pages/Entries';
-import { settings } from 'cluster';
+import './style/app.scss';
+import Import from './pages/Import';
 
 const SinglePage = ({ children }: { children: ReactNode }) => {
 	return <section className='single'>{children}</section>;
@@ -39,9 +40,10 @@ const App = () => {
 
 	const pages: IPage[] = [
 		{ path: '/user', component: UserPanel },
-		{ path: '/timeline', component: Entries },
-		{ path: '/settings', component: Settings },
+		{ path: '/timeline', component: Entries, icon: faClock },
 		{ path: '/settings/logins', component: Apikeys },
+		{ path: '/settings/import', component: Import },
+		{ path: '/settings', component: Settings, icon: faCog },
 	];
 
 	return (
@@ -53,6 +55,7 @@ const App = () => {
 						{loggedIn
 							? <section className='container'>
 
+								<Navbar pages={pages.filter(p => !!p.icon)} />
 								<Dialog />
 
 								<Switch>
@@ -100,6 +103,7 @@ export interface IPage {
 	component: (() => JSX.Element | null) | MemoExoticComponent<() => JSX.Element | null>;
 	id?: string;
 	text?: string;
+	icon?: IconDefinition;
 }
 
 const Page = (page: IPage) => {

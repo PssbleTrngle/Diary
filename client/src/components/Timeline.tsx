@@ -24,7 +24,7 @@ const Entry = ({ id, text, title, images, timestamps, service }: IEntry) => {
         {service && <ServiceIcon {...service} />}
         <span className='timestamp'>{created}</span>
         <h1>{title}</h1>
-        <p>{text}</p>
+        {text && <p>{text}</p>}
         {images?.map((src, i) => <img key={i} {...{ src }} />)}
     </div>
 }

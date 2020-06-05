@@ -29,7 +29,7 @@ export interface IService extends IModel {
 export interface ILogin extends IModel {
     service: IService;
     user: IUser;
-    identification: string;
+    apiId: string | number;
 }
 
 export interface IEntry extends IOwned {

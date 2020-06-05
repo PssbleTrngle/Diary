@@ -9,6 +9,9 @@ export default class User extends BaseEntity {
     @PrimaryGeneratedColumn()
     id!: number;
 
+    @Column({ select: false, default: false })
+    dev!: boolean;
+
     @Column({
         unique: true, transformer: {
             to: (v: string) => v.toLowerCase(),
@@ -24,12 +27,12 @@ export default class User extends BaseEntity {
     email!: string;
 
     @OneToMany(() => Entry, entry => entry.user)
-    entries!: Entry[];
+    entries!:  Promise<Entry[]>;
 
     @OneToMany(() => Apikey, key => key.user)
-    keys!: Apikey[];
+    keys!:  Promise<Apikey[]>;
 
     @OneToMany(() => Login, login => login.user)
-    logins!: Login[];
+    logins!: Promise<Login[]>;
 
 }

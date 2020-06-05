@@ -19,7 +19,7 @@ class Api {
     private observers: Set<IObserver<any>> = new Set();
 
     private apiURL(endpoint: string) {
-        if (endpoint.startsWith(API_URL)) return endpoint;
+        if (endpoint.startsWith('/')) return endpoint;
         return `${API_URL}/${endpoint}`
     }
 
@@ -34,7 +34,8 @@ class Api {
             this.authorization();
             return this.fetch('user')
                 .then(() => true)
-                .catch(() => {
+                .catch(e => {
+                    console.log(e);
                     localStorage.removeItem('apikey');
                     return false;
                 });
@@ -81,9 +82,9 @@ class Api {
      * @param endpoint The api url
      * @param params Optional query params
      */
-    async fetch<O>(endpoint: string, params?: ParsedUrlQueryInput | string) {
+    async fetch<O>(endpoint: string, params?: ParsedUrlQueryInput | string, options: RequestInit = {}) {
         const query = typeof params === 'string' ? params : querystring.encode(params ?? {});
-        return this.method<O>('get', `${endpoint}/?${query}`);
+        return this.method<O>('get', `${endpoint}/?${query}`, undefined, false, options);
     }
 
     /**
@@ -110,7 +111,7 @@ class Api {
         });
     }
 
-    private async method<O>(method: Method, endpoint: string, args?: any, update = true) {
+    private async method<O>(method: Method, endpoint: string, args?: any, update = true, options: RequestInit = {}) {
 
         const url = this.apiURL(endpoint);
 
@@ -122,11 +123,12 @@ class Api {
                 'Authorization': this.authorization(),
             },
             body: args ? JSON.stringify(args) : undefined,
+            ...options
         });
 
         if (update && method !== 'get') this.update();
 
-        if (response.status === 200)
+        if (response.ok)
             return response.json() as Promise<Response<O>>;
         else
             throw new Error(await response.text() ?? 'Internal server error');

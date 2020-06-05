@@ -1,18 +1,19 @@
+$distance: 20px;
+
 #timeline {
-    
     grid-template: "timeline";
 
     .timeline {
-        width: 100vw;
+        width: calc(100% - #{$distance * 2});
+    
+        max-height: calc(100vh - #{$nav-height + $distance * 2});
+        overflow-y: scroll;
+        overflow-x: hidden;
     }
-
 }
 
 .timeline {
-    $distance: 20px;
     padding: $distance;
-    overflow-y: scroll;
-    overflow-x: hidden;
 
     max-height: calc(100% - #{$distance * 2});
     min-width: 600px;
@@ -42,7 +43,7 @@
         p {
             grid-area: text;
         }
-        
+
         .timestamp {
             color: $light-gray;
             justify-self: center;

@@ -35,7 +35,7 @@ h5 {
 
 @mixin hover($by: 0.05) {
     &:hover {
-        transform: translateY(-$by * 100%)
+        transform: translateY(-$by * 100%);
     }
 }
 
@@ -84,10 +84,15 @@ h5 {
 .container {
     display: grid;
     justify-content: center;
+
+    grid-template:
+        ". nav" $nav-height
+        "page page"
+        / 1fr $nav-height;
 }
 
 .page {
-    height: 100vh;
+    justify-content: center;
 }
 
 img {

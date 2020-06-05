@@ -9,6 +9,7 @@ import { Service } from './models/Service';
 import Login from './models/Login';
 import ServiceController from './controller/ServiceController';
 import { Request, Response } from 'express';
+import ImportController from './controller/ImportController';
 
 interface IRoute {
     method: string;
@@ -27,15 +28,42 @@ const Resources: {
 export const Routes: IRoute[] = [
     ...resource('users', User),
     ...resource('entries', Entry, true),
-    ...resource('apikeys', Apikey, true),
-    ...resource('logins', Login, true),
+    ...resource('apikeys', Apikey, true, { all: true, one: true }),
+    ...resource('logins', Login, true, { all: true, one: true, remove: true }),
     ...resource('services', Service),
     {
         method: 'get',
-        route: '/auth/:id',
+        route: '/api/imports',
+        controller: ImportController,
+        action: 'list',
+        auth: true,
+    },
+    {
+        method: 'post',
+        route: '/api/import/:id',
+        controller: ImportController,
+        action: 'import',
+        auth: true,
+    },
+    {
+        method: 'post',
+        route: '/auth/:name',
         controller: ServiceController,
         action: 'authorize',
         auth: true,
+    },
+    {
+        method: 'post',
+        route: '/webhooks/:name',
+        controller: ServiceController,
+        action: 'webhook',
+        auth: false,
+    },
+    {
+        method: 'get',
+        route: '/auth/:name',
+        controller: ServiceController,
+        action: 'redirect'
     },
     {
         method: 'post',
@@ -60,15 +88,15 @@ export const Routes: IRoute[] = [
     resources(),
     {
         method: 'get',
-        route: '*',
+        route: '/',
         controller: class {
             get(_: Request, res: Response) {
                 if (process.env.NODE_ENV === 'development')
-                    res.redirect('https://localhost:3000')
+                    res.redirect('http://localhost:3000')
                 else res.send('TODO')
             }
         },
-
+        action: 'get'
     }
 ];
 

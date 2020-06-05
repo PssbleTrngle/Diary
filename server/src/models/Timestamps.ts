@@ -3,10 +3,10 @@ import User from "./User";
 
 class Timestamps {
 
-    @Column({ default: () => 'CURRENT_TIMESTAMP' })
+    @Column({ default: 'CURRENT_TIMESTAMP' })
     created!: Date;
 
-    @Column({ default: () => 'CURRENT_TIMESTAMP' })
+    @Column({ default: 'CURRENT_TIMESTAMP' })
     updated!: Date;
 
 }

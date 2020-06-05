@@ -1,22 +1,23 @@
 import { EntitySubscriberInterface, EventSubscriber, UpdateEvent, InsertEvent } from "typeorm";
-import { Entity } from "../controller/ResourceController";
+import { IEntity } from "../controller/ResourceController";
 import { debug } from "../logging";
+import Timestamps from "../models/Timestamps";
 
 @EventSubscriber()
 export class EntityUpdated implements EntitySubscriberInterface<any> {
 
-    beforeUpdate(event: UpdateEvent<Entity>) {
+    beforeUpdate(event: UpdateEvent<IEntity>) {
         if (event.entity.timestamps) {
             event.entity.timestamps.updated = new Date();
         }
     }
 
     /*
-    beforeInsert(event: InsertEvent<Entity>) {
-        if (event.entity.timestamps) {
-            const date = new Date();
-            event.entity.timestamps.created = date;
-            event.entity.timestamps.updated = date;
+    beforeInsert(event: InsertEvent<any>) {
+        const date = event.entity.timestamps?.created ?? new Date().getTime();
+        event.entity.timestamps = {
+            created: date,
+            updated: date,
         }
     }
     */

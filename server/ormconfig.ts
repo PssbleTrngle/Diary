@@ -1,19 +1,21 @@
 import { debug } from './src/logging';
-
-const r = require('dotenv').config({ path: './.env' });
+require('dotenv').config({ path: './.env' });
 
 debug('Config Loaded');
 
-module.exports = {
+const ts = __filename.endsWith('.ts');
+const files = (folder: string) => [ts ? `src/${folder}/**/*.ts` : `build/src/${folder}/**/*.js`]
+
+export default {
    type: process.env.DB_DIALECT,
-   database: process.env.DB_STORAGE ?? process.env.DB_NAME,
+   database: process.env.DB_STORAGE || process.env.DB_NAME,
    synchronize: true,
    logging: process.env.DB_LOGGING === 'true',
-   entities: ['src/models/**/*.ts'],
-   migrations: ['src/migration/**/*.ts'],
-   subscribers: ['src/subscriber/**/*.ts'],
-   seeds: ['src/seeds/**/*.ts'],
-   factories: ['src/factories/**/*.ts'],
+   entities: files('models'),
+   migrations: files('migration'),
+   subscribers: files('subscriber'),
+   seeds: files('seeds'),
+   factories: files('factories'),
    cli: {
       entitiesDir: 'src/models',
       migrationsDir: 'src/migration',

@@ -1,15 +1,16 @@
-import { faFire, faMoon, faSun, IconDefinition } from '@fortawesome/free-solid-svg-icons';
+import { faFire, faMoon, faSun, faTrash, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon as Icon } from '@fortawesome/react-fontawesome';
 import classes from 'classnames';
 import l from 'lodash';
 //@ts-ignore
 import moment from 'moment/min/moment-with-locales';
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import API from '../api/Api';
 import { Loading, useApiList } from '../api/Hooks';
 import { ILogin, IService } from '../api/Models';
+import { GenericDialog, useDialog } from './Dialog';
 import { getStyle } from './Service';
-import Cell from './Cell';
-import { SERVER_URL } from '../config';
 
 type DeepPartial<T> = {
     [P in keyof T]?: T[P] extends Array<infer U> ? Array<DeepPartial<U>> : T[P] extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : DeepPartial<T[P]>;
@@ -39,9 +40,10 @@ const Settings = () => {
     const panels = [
         { title: 'services', component: Services },
         { title: 'theme', component: Theme },
+        { title: 'import', component: Import },
     ]
 
-    return <div className='settings'>
+    return <div className='panels'>
         {panels.map(panel =>
             <div id={panel.title} key={panel.title}>
                 <h3>{panel.title}</h3>
@@ -51,32 +53,67 @@ const Settings = () => {
     </div>
 }
 
+const ServiceButton = ({ name, id, login }: IService & { login?: ILogin }) => {
+    const { icon, backgroundColor, text } = getStyle(name);
+
+    const click = () => {
+        API.post<{ url: string }>(`/auth/${name.toLowerCase()}`, { from: window.location.href })
+            .then(({ url }) => window.open(url, '_self'))
+            .catch(e => console.error(e));
+    }
+
+    return (
+        <li
+            role={login ? undefined : 'button'}
+            onClick={login ? undefined : click}
+            style={{ backgroundColor, color: text }}
+            className={classes({ has: !!login })}
+            title={login ? 'Already connected' : `Connect to ${name}`}
+        >
+            <Icon {...{ icon }} />
+            <span>{name}</span>
+            {login && <DeleteLogin {...login} />}
+        </li >
+    )
+}
+
+const DeleteLogin = ({ id, service }: ILogin) => {
+    const { open } = useDialog();
+
+    const action = () => API.delete(`logins/${id}`)
+        .catch(e => console.error(e));
+
+    return <button className='red' onClick={() => open(<GenericDialog dialog={{
+        text: `Logout of ${service.name}`,
+        buttons: [
+            { text: 'Logout', click: action, className: 'red' },
+            { text: 'Cancel' },
+        ],
+    }} />)}>
+        <Icon icon={faTrash} />
+    </button>
+
+}
+
+const Import = () => {
+    return <Link to={'/settings/import'}>Import</Link>;
+}
+
 const Services = () => {
     const [services] = useApiList<IService>('services');
     const [logins] = useApiList<ILogin>('logins');
 
-    return (
-        <>
-            {services && logins
-                ? <ul>
-                    {services.map(({ id, name }) => {
-                        const login = logins.find(l => l.service.id === id);
-                        const { icon, backgroundColor, text } = getStyle(name);
-
-                        return (
-                            <a href={`${SERVER_URL}/auth/${name.toLowerCase()}`}>
-                                <li style={{ backgroundColor, color: text }} key={id} className={classes({ has: !!login })}>
-                                    <Icon {...{ icon }} />
-                                    <span>{name}</span>
-                                </li>
-                            </a>
-                        )
-                    })}
-                </ul>
-                : <Loading />
-            }
-        </>
-    )
+    return services && logins
+        ? <ul>
+            {services.map(s =>
+                <ServiceButton
+                    key={s.id}
+                    {...s}
+                    login={logins.find(l => l.service.id === s.id)}
+                />
+            )}
+        </ul>
+        : <Loading />
 }
 
 const Theme = () => {
