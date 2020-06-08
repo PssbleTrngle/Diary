@@ -10,4 +10,4 @@ COPY ./public client/public/
 COPY ./tsconfig.json client/
 RUN cd /client && npm run build
 
-CMD cp /client/build/* /client/out -r
+CMD cp /client/build/* /client/out -r && echo "Copied frontend"
