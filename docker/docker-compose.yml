@@ -2,6 +2,7 @@ version: "3.6"
 
 volumes:
   public:
+    external: false
 
 services:
   server:
